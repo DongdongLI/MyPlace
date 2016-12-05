@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "361559597297",
+    "project_id": "myplace-be86d"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:361559597297:android:c471c60a29837f3e",
+        "android_client_info": {
+          "package_name": "com.don.myplace"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "361559597297-4bi2enfvs9srd1fj5pql81i8hqi7n0nv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.don.myplace",
+            "certificate_hash": "076F5EB8B4BD4FAA6D3C8FA002FAC209E1CB44F4"
+          }
+        },
+        {
+          "client_id": "361559597297-0f7k7g2pqlv701od4aa396dp7n6alb5t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAVMaqUid566H5FqViuGWQm1q5jaZBnsxg"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
