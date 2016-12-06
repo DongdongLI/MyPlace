@@ -34,6 +34,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     Button signInBtn;
     Button signOutBtn;
     Button disconnectBtn;
+    Button toMainBtn;
     TextView statusTextView;
 
     ProgressDialog mProcessDialog;
@@ -48,11 +49,19 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         signInBtn = (Button)findViewById(R.id.signin_btn);
         signOutBtn = (Button) findViewById(R.id.signout_btn);
         disconnectBtn = (Button) findViewById(R.id.disconnect_btn);
+        toMainBtn = (Button) findViewById(R.id.toMain_btn);
         statusTextView = (TextView) findViewById(R.id.statusText);
 
         signInBtn.setOnClickListener(this);
         signOutBtn.setOnClickListener(this);
         disconnectBtn.setOnClickListener(this);
+
+        toMainBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(LoginActivity.this, MainActivity.class));
+            }
+        });
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
@@ -75,7 +84,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
             handleSignInResult(res);
         }
         else {
-
+            updateUI(false);
         }
     }
 
@@ -108,6 +117,17 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         );
     }
 
+    private void revokeAccess() {
+        Auth.GoogleSignInApi.revokeAccess(mGoogleApiClient).setResultCallback(
+                new ResultCallback<Status>() {
+                    @Override
+                    public void onResult(@NonNull Status status) {
+                        updateUI(false);
+                    }
+                }
+        );
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -136,6 +156,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                 signOut();
                 break;
             case R.id.disconnect_btn:
+                revokeAccess();
                 break;
         }
     }
@@ -158,13 +179,17 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     private void updateUI (boolean signedIn) {
         if(signedIn){
             signInBtn.setVisibility(View.GONE);
-            findViewById(R.id.signout_disconnect_btn).setVisibility(View.VISIBLE);
+            signOutBtn.setVisibility(View.VISIBLE);
+            disconnectBtn.setVisibility(View.VISIBLE);
+            toMainBtn.setVisibility(View.VISIBLE);
         }
         else {
             statusTextView.setText("Not signed in");
 
             signInBtn.setVisibility(View.VISIBLE);
-            findViewById(R.id.signout_disconnect_btn).setVisibility(View.GONE);
+            signOutBtn.setVisibility(View.GONE);
+            disconnectBtn.setVisibility(View.GONE);
+            toMainBtn.setVisibility(View.GONE);
         }
     }
 }
