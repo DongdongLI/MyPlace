@@ -1,7 +1,9 @@
 {
   "project_info": {
     "project_number": "361559597297",
-    "project_id": "myplace-be86d"
+    "firebase_url": "https://myplace-be86d.firebaseio.com",
+    "project_id": "myplace-be86d",
+    "storage_bucket": "myplace-be86d.appspot.com"
   },
   "client": [
     {
@@ -21,6 +23,10 @@
           }
         },
         {
+          "client_id": "361559597297-j2vpq76ajljvigcj4p821hj6mgh7rstl.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
           "client_id": "361559597297-0f7k7g2pqlv701od4aa396dp7n6alb5t.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -35,11 +41,16 @@
           "status": 1
         },
         "appinvite_service": {
-          "status": 1,
-          "other_platform_oauth_client": []
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "361559597297-j2vpq76ajljvigcj4p821hj6mgh7rstl.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         },
         "ads_service": {
-          "status": 1
+          "status": 2
         }
       }
     }
