@@ -4,13 +4,17 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.don.myplace.ListviewAdapter.PlaceAdapter;
 import com.don.myplace.model.Place;
+import com.don.myplace.model.User;
+import com.firebase.ui.database.FirebaseListAdapter;
 import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
@@ -32,6 +36,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     GoogleApiClient mGoogleApiClient;
     DatabaseReference firebaseDatabase;
 
+    ValueEventListener valueEventListener;
+
+    GoogleSignInAccount currentUser;
+
+    OptionalPendingResult<GoogleSignInResult> opr;
+
+    FirebaseListAdapter mAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,17 +51,20 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
         infoText = (TextView)findViewById(R.id.info_text);
 
-        List<Place> places = new ArrayList<>();
+        //List<Place> places = new ArrayList<>();
 
         // test data
-        places.add(new Place("title", "type", "address", "telephone"));
+        //places.add(new Place("title", "type", "address", "telephone"));
 
         // initialize list view and adapter
         ListView listView = (ListView)findViewById(R.id.placeList);
-        PlaceAdapter adapter = new PlaceAdapter(this, R.layout.row_item_layout, places);
-        listView.setAdapter(adapter);
+//        PlaceAdapter adapter = new PlaceAdapter(this, R.layout.row_item_layout, places);
+//        listView.setAdapter(adapter);
+//
+//        adapter.setNotifyOnChange(true);
 
-        adapter.setNotifyOnChange(true);
+
+
 
         // google sign in stuff
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -64,47 +79,96 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         firebaseDatabase = FirebaseDatabase.getInstance().getReference();
         //Toast.makeText(this, firebaseDatabase.vachild("users").child("admin").toString(), Toast.LENGTH_SHORT).show();
 
-        firebaseDatabase.addValueEventListener(new ValueEventListener() {
+        opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
+        if(opr.isDone()) {
+            infoText.setText("you are in");
+            currentUser = opr.get().getSignInAccount();
+        }
+        else {
+            infoText.setText("you are out");
+        }
+
+        valueEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.d(TAG, dataSnapshot.getValue().toString());
+                //Log.d(TAG, "meow: "+dataSnapshot.child("users").child(currentUser.getDisplayName()).toString());
+                // If user does not exist, create him
+                if (dataSnapshot.child("users").child(currentUser.getDisplayName()).getValue()==null) {
+                    Log.d(TAG, "user not found, creating one...");
+                    // create user
+                    createUser();
+                }
+                else{
+                    Log.d(TAG, "user found");
+                }
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
 
             }
-        });
+        };
 
-        firebaseDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+//        mAdapter = new FirebaseListAdapter(this, Place.class, android.R.layout.two_line_list_item, firebaseDatabase) {
+//            @Override
+//            protected void populateView(View view, Object o, int i) {
+//
+//            }
+//        };
+
+        mAdapter = new FirebaseListAdapter<Place>(this, Place.class, R.layout.row_item_layout, firebaseDatabase.child("users").child(currentUser.getDisplayName()).child("places")) {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-
+            protected void populateView(View view, Place place, int i) {
+                ((TextView)view.findViewById(R.id.placeTitle)).setText(place.getTitle());
+                ((TextView)view.findViewById(R.id.placeType)).setText(place.getType());
+                ((TextView)view.findViewById(R.id.placeAddress)).setText(place.getAddress());
+                ((TextView)view.findViewById(R.id.placeNumber)).setText(place.getTelephone());
             }
+        };
+        listView.setAdapter(mAdapter);
+        firebaseDatabase.addValueEventListener(valueEventListener);
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
     }
 
     @Override
     protected void onStart() {
         super.onStart();
 
-        OptionalPendingResult<GoogleSignInResult> opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
+        opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
         if(opr.isDone()) {
             infoText.setText("you are in");
+            currentUser = opr.get().getSignInAccount();
         }
         else {
             infoText.setText("you are out");
         }
+    }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        //firebaseDatabase.removeEventListener(valueEventListener);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        //firebaseDatabase.addValueEventListener(valueEventListener);
     }
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.d(TAG, "login fail: "+connectionResult);
+    }
+
+    private void createUser() {
+        User user = new User(currentUser.getDisplayName(), currentUser.getEmail(), null);
+        firebaseDatabase.child("users").child(user.getDisplayName()).setValue(user);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mAdapter.cleanup();
     }
 }
