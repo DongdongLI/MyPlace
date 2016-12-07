@@ -1,14 +1,17 @@
 package com.don.myplace;
 
+import android.app.DialogFragment;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.don.myplace.fragment.PlaceDetailFragment;
 import com.don.myplace.model.Place;
 import com.don.myplace.model.User;
 import com.firebase.ui.database.FirebaseListAdapter;
@@ -102,6 +105,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         listView.setAdapter(mAdapter);
         firebaseDatabase.addValueEventListener(valueEventListener);
 
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Place place = (Place)parent.getItemAtPosition(position);
+                Log.d(TAG, "I'm clicked... "+place);
+
+                DialogFragment newFragment = PlaceDetailFragment.newInstance(place);
+                newFragment.show(getFragmentManager(), "detail");
+            }
+        });
     }
 
     @Override

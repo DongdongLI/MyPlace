@@ -1,10 +1,12 @@
 package com.don.myplace.model;
 
+import java.io.Serializable;
+
 /**
  * Created by dli on 12/5/2016.
  */
 
-public class Place {
+public class Place implements Serializable{
     private String title;
     private String type;
     private String address;
@@ -49,5 +51,15 @@ public class Place {
         this.type = type;
         this.address = address;
         this.telephone = telephone;
+    }
+
+    @Override
+    public String toString() {
+        return "Place{" +
+                "title='" + title + '\'' +
+                ", type='" + type + '\'' +
+                ", address='" + address + '\'' +
+                ", telephone='" + telephone + '\'' +
+                '}';
     }
 }
