@@ -9,7 +9,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.don.myplace.ListviewAdapter.PlaceAdapter;
 import com.don.myplace.model.Place;
 import com.don.myplace.model.User;
 import com.firebase.ui.database.FirebaseListAdapter;
@@ -25,9 +24,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener{
 
@@ -51,20 +47,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
         infoText = (TextView)findViewById(R.id.info_text);
 
-        //List<Place> places = new ArrayList<>();
-
-        // test data
-        //places.add(new Place("title", "type", "address", "telephone"));
-
-        // initialize list view and adapter
         ListView listView = (ListView)findViewById(R.id.placeList);
-//        PlaceAdapter adapter = new PlaceAdapter(this, R.layout.row_item_layout, places);
-//        listView.setAdapter(adapter);
-//
-//        adapter.setNotifyOnChange(true);
-
-
-
 
         // google sign in stuff
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -77,7 +60,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 .build();
 
         firebaseDatabase = FirebaseDatabase.getInstance().getReference();
-        //Toast.makeText(this, firebaseDatabase.vachild("users").child("admin").toString(), Toast.LENGTH_SHORT).show();
 
         opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
         if(opr.isDone()) {
@@ -91,15 +73,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         valueEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                //Log.d(TAG, "meow: "+dataSnapshot.child("users").child(currentUser.getDisplayName()).toString());
                 // If user does not exist, create him
                 if (dataSnapshot.child("users").child(currentUser.getDisplayName()).getValue()==null) {
-                    Log.d(TAG, "user not found, creating one...");
+                    Toast.makeText(getApplicationContext(), "user not found, creating one...", Toast.LENGTH_SHORT).show();
                     // create user
                     createUser();
                 }
                 else{
-                    Log.d(TAG, "user found");
+                    Toast.makeText(getApplicationContext(), "user found", Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -108,13 +89,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
             }
         };
-
-//        mAdapter = new FirebaseListAdapter(this, Place.class, android.R.layout.two_line_list_item, firebaseDatabase) {
-//            @Override
-//            protected void populateView(View view, Object o, int i) {
-//
-//            }
-//        };
 
         mAdapter = new FirebaseListAdapter<Place>(this, Place.class, R.layout.row_item_layout, firebaseDatabase.child("users").child(currentUser.getDisplayName()).child("places")) {
             @Override

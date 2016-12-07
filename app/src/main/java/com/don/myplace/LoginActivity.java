@@ -37,7 +37,6 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     Button toMainBtn;
     TextView statusTextView;
 
-    ProgressDialog mProcessDialog;
 
     GoogleApiClient mGoogleApiClient;
 
@@ -159,21 +158,6 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
                 revokeAccess();
                 break;
         }
-    }
-
-
-    private void showProgressDialog() {
-        if (mProcessDialog == null) {
-            mProcessDialog = new ProgressDialog(this);
-            mProcessDialog.setMessage("Loading...");
-            mProcessDialog.setIndeterminate(true);
-        }
-        mProcessDialog.show();
-    }
-
-    private void hideProgerssDialog() {
-        if (mProcessDialog!=null && mProcessDialog.isShowing())
-            mProcessDialog.hide();
     }
 
     private void updateUI (boolean signedIn) {
