@@ -20,7 +20,8 @@
                 android:id="@+id/detail_title_txt"
                 android:layout_weight="1"
                 android:layout_marginTop="20dp"
-                android:gravity="center"/>
+                android:gravity="center"
+                android:hint="title" />
 
             <EditText
                 android:layout_width="match_parent"
@@ -28,7 +29,8 @@
                 android:id="@+id/detail_addr_txt"
                 android:layout_below="@+id/detail_title_txt"
                 android:layout_weight="1"
-                android:gravity="center"/>
+                android:gravity="center"
+                android:hint="address" />
 
             <EditText
                 android:layout_width="match_parent"
@@ -36,7 +38,8 @@
                 android:id="@+id/detail_type_txt"
                 android:layout_below="@+id/detail_addr_txt"
                 android:layout_weight="1"
-                android:gravity="center"/>
+                android:gravity="center"
+                android:hint="type" />
 
             <EditText
                 android:layout_width="match_parent"
@@ -44,7 +47,8 @@
                 android:id="@+id/detail_num_txt"
                 android:layout_below="@+id/detail_type_txt"
                 android:layout_weight="1"
-                android:gravity="center"/>
+                android:gravity="center"
+                android:inputType="phone" />
         </RelativeLayout>
 
         <LinearLayout

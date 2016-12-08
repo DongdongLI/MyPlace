@@ -3,6 +3,7 @@ package com.don.myplace.fragment;
 
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -15,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 
 
+import com.don.myplace.ManipulateDataInFragment;
 import com.don.myplace.R;
 import com.don.myplace.model.Place;
 
@@ -33,6 +35,8 @@ public class PlaceDetailFragment extends DialogFragment{
     EditText typeTxt;
     EditText numberTxt;
 
+    private ManipulateDataInFragment listener;
+
     public static PlaceDetailFragment newInstance(Place place) {
         PlaceDetailFragment fragment = new PlaceDetailFragment();
         Bundle bundle = new Bundle();
@@ -44,6 +48,19 @@ public class PlaceDetailFragment extends DialogFragment{
 
     public static void setPlace(Place place) {
         PlaceDetailFragment.place = place;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if(context instanceof ManipulateDataInFragment)
+            listener = (ManipulateDataInFragment) context;
+    }
+
+    @Override
+    public void onDetach() {
+        listener = null;
+        super.onDetach();
     }
 
     @NonNull
@@ -71,7 +88,11 @@ public class PlaceDetailFragment extends DialogFragment{
         builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-
+                place.setAddress(addressTxt.getText().toString());
+                place.setTitle(titleTxt.getText().toString());
+                place.setType(typeTxt.getText().toString());
+                place.setTelephone(numberTxt.getText().toString());
+                listener.saveData(place);
             }
         }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             @Override

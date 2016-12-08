@@ -28,7 +28,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener{
+public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, ManipulateDataInFragment{
 
     TextView infoText;
     final String TAG = "mainactivity";
@@ -157,5 +157,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     protected void onDestroy() {
         super.onDestroy();
         mAdapter.cleanup();
+    }
+
+    @Override
+    public void saveData(Place place) {
+        firebaseDatabase.child("users").child(currentUser.getDisplayName()).child("places").child(place.getPlaceId()+"").setValue(place);
     }
 }
