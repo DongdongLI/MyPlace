@@ -1,18 +1,21 @@
 package com.don.myplace;
 
+import android.app.Activity;
 import android.app.DialogFragment;
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.don.myplace.fragment.PlaceDetailFragment;
-import com.don.myplace.model.Place;
+import com.don.myplace.model.SavedPlace;
 import com.don.myplace.model.User;
 import com.firebase.ui.database.FirebaseListAdapter;
 import com.google.android.gms.auth.api.Auth;
@@ -20,8 +23,12 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.OptionalPendingResult;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -31,6 +38,8 @@ import com.google.firebase.database.ValueEventListener;
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, ManipulateDataInFragment{
 
     TextView infoText;
+    Button addPlaceBtn;
+
     final String TAG = "mainactivity";
     GoogleApiClient mGoogleApiClient;
     DatabaseReference firebaseDatabase;
@@ -43,13 +52,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
     FirebaseListAdapter mAdapter;
 
+    final int PLACE_PICKER_REQUEST = 1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         infoText = (TextView)findViewById(R.id.info_text);
-
+        addPlaceBtn = (Button)findViewById(R.id.add_new_place_btn);
         ListView listView = (ListView)findViewById(R.id.placeList);
 
         // google sign in stuff
@@ -93,9 +104,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             }
         };
 
-        mAdapter = new FirebaseListAdapter<Place>(this, Place.class, R.layout.row_item_layout, firebaseDatabase.child("users").child(currentUser.getDisplayName()).child("places")) {
+        mAdapter = new FirebaseListAdapter<SavedPlace>(this, SavedPlace.class, R.layout.row_item_layout, firebaseDatabase.child("users").child(currentUser.getDisplayName()).child("places")) {
             @Override
-            protected void populateView(View view, Place place, int i) {
+            protected void populateView(View view, SavedPlace place, int i) {
                 ((TextView)view.findViewById(R.id.placeTitle)).setText(place.getTitle());
                 ((TextView)view.findViewById(R.id.placeType)).setText(place.getType());
                 ((TextView)view.findViewById(R.id.placeAddress)).setText(place.getAddress());
@@ -108,13 +119,42 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Place place = (Place)parent.getItemAtPosition(position);
+                SavedPlace place = (SavedPlace)parent.getItemAtPosition(position);
                 Log.d(TAG, "I'm clicked... "+place);
 
                 DialogFragment newFragment = PlaceDetailFragment.newInstance(place);
                 newFragment.show(getFragmentManager(), "detail");
             }
         });
+
+
+        addPlaceBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    PlacePicker.IntentBuilder intentBuilder =
+                            new PlacePicker.IntentBuilder();
+                    //intentBuilder.setLatLngBounds(BOUNDS_MOUNTAIN_VIEW);
+                    Intent intent = intentBuilder.build(MainActivity.this);
+                    startActivityForResult(intent, PLACE_PICKER_REQUEST);
+
+                } catch (GooglePlayServicesRepairableException
+                        | GooglePlayServicesNotAvailableException e) {
+                    Log.d(TAG, "fail to build place picker intent ");
+                    Log.d(TAG, e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        ((Button)findViewById(R.id.mock)).setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        firebaseDatabase.child("users").child(currentUser.getDisplayName()).child("places").child("mocknew").setValue(new SavedPlace("","","",""));
+                    }
+                }
+        );
     }
 
     @Override
@@ -128,6 +168,27 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         }
         else {
             infoText.setText("you are out");
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (requestCode == PLACE_PICKER_REQUEST
+                && resultCode == Activity.RESULT_OK) {
+
+            final Place place = PlacePicker.getPlace(this, data);
+            final CharSequence name = place.getName();
+            final CharSequence address = place.getAddress();
+            String attributions = (String) place.getAttributions();
+            if (attributions == null) {
+                attributions = "";
+            }
+
+            Log.d(TAG, place.toString());
+
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
         }
     }
 
@@ -160,7 +221,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     }
 
     @Override
-    public void saveData(Place place) {
+    public void saveData(SavedPlace place) {
         firebaseDatabase.child("users").child(currentUser.getDisplayName()).child("places").child(place.getPlaceId()+"").setValue(place);
     }
 }

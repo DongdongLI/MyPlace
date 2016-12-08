@@ -33,13 +33,17 @@
             android:layout_weight="1"
             android:gravity="center"/>
 
-        <TextView
-            android:text="TextView"
+        <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/textView3"
-            android:layout_weight="1"
-            android:gravity="center"/>
+            android:id="@+id/add_new_place_btn"
+            android:text="Add a new Place" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/mock"
+            android:text="mock new Place" />
     </LinearLayout>
 
     <ListView

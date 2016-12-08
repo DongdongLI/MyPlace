@@ -9,7 +9,7 @@ import java.util.List;
 public class User {
     private String displayName;
     private String emailAddress;
-    private List<Place> savedPlaces;
+    private List<SavedPlace> savedPlaces;
 
     public String getDisplayName() {
         return displayName;
@@ -27,17 +27,17 @@ public class User {
         this.emailAddress = emailAddress;
     }
 
-    public List<Place> getSavedPlaces() {
+    public List<SavedPlace> getSavedPlaces() {
         return savedPlaces;
     }
 
-    public void setSavedPlaces(List<Place> savedPlaces) {
+    public void setSavedPlaces(List<SavedPlace> savedPlaces) {
         this.savedPlaces = savedPlaces;
     }
 
     public User(){}
 
-    public User(String displayName, String emailAddress, List<Place> savedPlaces) {
+    public User(String displayName, String emailAddress, List<SavedPlace> savedPlaces) {
         this.displayName = displayName;
         this.emailAddress = emailAddress;
         this.savedPlaces = savedPlaces;

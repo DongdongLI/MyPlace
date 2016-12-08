@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">MyPlace</string>
+    <string name="google_android_map_api_key">AIzaSyB23-5mSkjb38K3GDCjDHgJOK_s2c86xqk</string>
 </resources>

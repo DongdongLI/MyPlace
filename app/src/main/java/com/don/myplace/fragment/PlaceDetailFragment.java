@@ -5,6 +5,8 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -18,7 +20,13 @@ import android.widget.EditText;
 
 import com.don.myplace.ManipulateDataInFragment;
 import com.don.myplace.R;
-import com.don.myplace.model.Place;
+import com.don.myplace.model.SavedPlace;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.MarkerOptions;
+
+import java.util.List;
 
 /**
  * Created by dli on 12/7/2016.
@@ -28,16 +36,19 @@ public class PlaceDetailFragment extends DialogFragment{
 
     private static final String PLACE_IN_FRAGMENT = "placeInFragment";
     String TAG = "placedetail";
-    private static Place place;
+    private static SavedPlace place;
 
     EditText titleTxt;
     EditText addressTxt;
     EditText typeTxt;
     EditText numberTxt;
 
+    MapFragment mapFragment;
+    GoogleMap googleMap;
+
     private ManipulateDataInFragment listener;
 
-    public static PlaceDetailFragment newInstance(Place place) {
+    public static PlaceDetailFragment newInstance(SavedPlace place) {
         PlaceDetailFragment fragment = new PlaceDetailFragment();
         Bundle bundle = new Bundle();
         bundle.putSerializable(PLACE_IN_FRAGMENT, place);
@@ -46,7 +57,7 @@ public class PlaceDetailFragment extends DialogFragment{
         return fragment;
     }
 
-    public static void setPlace(Place place) {
+    public static void setPlace(SavedPlace place) {
         PlaceDetailFragment.place = place;
     }
 
@@ -69,7 +80,7 @@ public class PlaceDetailFragment extends DialogFragment{
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle("Detail");
 
-        setPlace((Place)getArguments().getSerializable(PLACE_IN_FRAGMENT));
+        setPlace((SavedPlace)getArguments().getSerializable(PLACE_IN_FRAGMENT));
         LayoutInflater inflater = getActivity().getLayoutInflater();
 
         View view = inflater.inflate(R.layout.detail_fragment, null);
@@ -78,8 +89,20 @@ public class PlaceDetailFragment extends DialogFragment{
         typeTxt = (EditText)view.findViewById(R.id.detail_type_txt);
         numberTxt = (EditText)view.findViewById(R.id.detail_num_txt);
 
+        mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
+        mapFragment.getMapAsync(
+                new OnMapReadyCallback() {
+                    @Override
+                    public void onMapReady(GoogleMap googleMap) {
+                        googleMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
+
+                    }
+                }
+        );
+
         builder.setView(view);
 
+        // populate the editTexts
         titleTxt.setText(place.getTitle());
         addressTxt.setText(place.getAddress());
         typeTxt.setText(place.getType());
@@ -101,6 +124,9 @@ public class PlaceDetailFragment extends DialogFragment{
             }
         });
 
+
+
         return builder.create();
     }
+
 }

@@ -6,7 +6,7 @@ import java.io.Serializable;
  * Created by dli on 12/5/2016.
  */
 
-public class Place implements Serializable{
+public class SavedPlace implements Serializable{
     private Integer placeId;
 
     private String title;
@@ -54,9 +54,9 @@ public class Place implements Serializable{
         this.placeId = placeId;
     }
 
-    public Place(){}
+    public SavedPlace(){}
 
-    public Place(String title, String type, String address, String telephone) {
+    public SavedPlace(String title, String type, String address, String telephone) {
         this.title = title;
         this.type = type;
         this.address = address;
