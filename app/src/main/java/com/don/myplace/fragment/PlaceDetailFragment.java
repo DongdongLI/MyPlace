@@ -12,6 +12,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.view.InflateException;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,6 +47,8 @@ public class PlaceDetailFragment extends DialogFragment{
     MapFragment mapFragment;
     GoogleMap googleMap;
 
+    private static View view;
+
     private ManipulateDataInFragment listener;
 
     public static PlaceDetailFragment newInstance(SavedPlace place) {
@@ -77,13 +80,21 @@ public class PlaceDetailFragment extends DialogFragment{
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+
+        if(view != null && view.getParent()!= null)
+            ((ViewGroup)view.getParent()).removeView(view);
+
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle("Detail");
 
         setPlace((SavedPlace)getArguments().getSerializable(PLACE_IN_FRAGMENT));
         LayoutInflater inflater = getActivity().getLayoutInflater();
 
-        View view = inflater.inflate(R.layout.detail_fragment, null);
+        try {
+            view = inflater.inflate(R.layout.detail_fragment, null);
+        } catch (InflateException e){
+
+        }
         titleTxt = (EditText)view.findViewById(R.id.detail_title_txt);
         addressTxt = (EditText)view.findViewById(R.id.detail_addr_txt);
         typeTxt = (EditText)view.findViewById(R.id.detail_type_txt);

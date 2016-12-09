@@ -7,7 +7,7 @@ import java.io.Serializable;
  */
 
 public class SavedPlace implements Serializable{
-    private Integer placeId;
+    private String placeId;
 
     private String title;
     private String type;
@@ -46,11 +46,11 @@ public class SavedPlace implements Serializable{
         this.telephone = telephone;
     }
 
-    public Integer getPlaceId() {
+    public String getPlaceId() {
         return placeId;
     }
 
-    public void setPlaceId(Integer placeId) {
+    public void setPlaceId(String placeId) {
         this.placeId = placeId;
     }
 

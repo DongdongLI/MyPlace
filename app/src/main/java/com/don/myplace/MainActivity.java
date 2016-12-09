@@ -75,15 +75,19 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
         firebaseDatabase = FirebaseDatabase.getInstance().getReference();
 
+        // attempt to sign in silently
         opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
         if(opr.isDone()) {
-            infoText.setText("you are in");
             currentUser = opr.get().getSignInAccount();
+            infoText.setText(currentUser.getDisplayName());
+            if(currentUser == null)
+                Log.d(TAG, "what the hell?");
         }
         else {
             infoText.setText("you are out");
         }
 
+        // in case data change in fire base
         valueEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -104,13 +108,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             }
         };
 
-        mAdapter = new FirebaseListAdapter<SavedPlace>(this, SavedPlace.class, R.layout.row_item_layout, firebaseDatabase.child("users").child(currentUser.getDisplayName()).child("places")) {
+        mAdapter = new FirebaseListAdapter<SavedPlace>(this, SavedPlace.class, R.layout.row_item_layout_simple, firebaseDatabase.child("users").child(currentUser.getDisplayName()).child("places")) {
             @Override
             protected void populateView(View view, SavedPlace place, int i) {
                 ((TextView)view.findViewById(R.id.placeTitle)).setText(place.getTitle());
-                ((TextView)view.findViewById(R.id.placeType)).setText(place.getType());
                 ((TextView)view.findViewById(R.id.placeAddress)).setText(place.getAddress());
-                ((TextView)view.findViewById(R.id.placeNumber)).setText(place.getTelephone());
             }
         };
         listView.setAdapter(mAdapter);
@@ -134,7 +136,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 try {
                     PlacePicker.IntentBuilder intentBuilder =
                             new PlacePicker.IntentBuilder();
-                    //intentBuilder.setLatLngBounds(BOUNDS_MOUNTAIN_VIEW);
                     Intent intent = intentBuilder.build(MainActivity.this);
                     startActivityForResult(intent, PLACE_PICKER_REQUEST);
 
@@ -163,8 +164,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
         opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
         if(opr.isDone()) {
-            infoText.setText("you are in");
             currentUser = opr.get().getSignInAccount();
+            infoText.setText(currentUser.getDisplayName());
         }
         else {
             infoText.setText("you are out");
@@ -181,6 +182,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             final CharSequence name = place.getName();
             final CharSequence address = place.getAddress();
             String attributions = (String) place.getAttributions();
+
+            SavedPlace newPlace = new SavedPlace(place.getName().toString(), place.getPlaceTypes().toString(), place.getAddress().toString(), place.getPhoneNumber().toString());
+            newPlace.setPlaceId(place.getId());
+
+            saveData(newPlace);
             if (attributions == null) {
                 attributions = "";
             }
@@ -222,6 +228,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
     @Override
     public void saveData(SavedPlace place) {
-        firebaseDatabase.child("users").child(currentUser.getDisplayName()).child("places").child(place.getPlaceId()+"").setValue(place);
+        firebaseDatabase.child("users").child(currentUser.getDisplayName()).child("places").child(place.getPlaceId()).setValue(place);
     }
 }
