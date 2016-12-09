@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -98,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                     createUser();
                 }
                 else{
-                    Toast.makeText(getApplicationContext(), "user found", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(getApplicationContext(), "user found", Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -110,9 +111,20 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
         mAdapter = new FirebaseListAdapter<SavedPlace>(this, SavedPlace.class, R.layout.row_item_layout_simple, firebaseDatabase.child("users").child(currentUser.getDisplayName()).child("places")) {
             @Override
-            protected void populateView(View view, SavedPlace place, int i) {
+            protected void populateView(View view, final SavedPlace place, int i) {
                 ((TextView)view.findViewById(R.id.placeTitle)).setText(place.getTitle());
                 ((TextView)view.findViewById(R.id.placeAddress)).setText(place.getAddress());
+
+                // the deleteIcon
+                view.findViewById(R.id.delete_img).setOnClickListener(
+                        new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                // find which savedPlace is in this row
+                                Log.d(TAG,"image is hit");
+                                firebaseDatabase.child("users").child(currentUser.getDisplayName()).child("places").child(place.getPlaceId()).setValue(null);
+                            }
+                        });
             }
         };
         listView.setAdapter(mAdapter);
@@ -128,6 +140,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 newFragment.show(getFragmentManager(), "detail");
             }
         });
+
 
 
         addPlaceBtn.setOnClickListener(new View.OnClickListener() {
