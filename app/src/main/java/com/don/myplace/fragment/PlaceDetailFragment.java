@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.location.Address;
 import android.location.Geocoder;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -23,11 +24,17 @@ import android.widget.ImageView;
 import com.don.myplace.ManipulateDataInFragment;
 import com.don.myplace.R;
 import com.don.myplace.model.SavedPlace;
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -106,8 +113,16 @@ public class PlaceDetailFragment extends DialogFragment{
                 new OnMapReadyCallback() {
                     @Override
                     public void onMapReady(GoogleMap googleMap) {
+                        Address address = new GeoTask(getActivity()).doInBackground(place.getAddress().toString());
+                        // this is the marker itself
+                        Marker marker = googleMap.addMarker((new MarkerOptions()
+                                .position(new LatLng(address.getLatitude(), address.getLongitude()))
+                                .draggable(false)
+                        ));
                         googleMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
-
+                        // this will move the camera to certain area and zoom in
+                        CameraUpdate cu = CameraUpdateFactory.newLatLngZoom(new LatLng(address.getLatitude(), address.getLongitude()), 16F);
+                        googleMap.moveCamera(cu);
                     }
                 }
         );
@@ -141,4 +156,42 @@ public class PlaceDetailFragment extends DialogFragment{
         return builder.create();
     }
 
+
+    class GeoTask extends AsyncTask<String, Void, Address>
+    {
+        Context mContext;
+        public GeoTask(Context context)
+        {
+            this.mContext=context;
+        }
+        @Override
+        protected Address doInBackground(String... params) {
+            List<Address> addressList=null;
+
+            Geocoder geocoder=new Geocoder(mContext);
+
+            try {
+                addressList = geocoder.getFromLocationName(params[0], 5);
+                if(addressList == null || addressList.size()==0)
+                    return null;
+                return addressList.get(0);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+        @Override
+        protected void onPostExecute(Address result) {
+            if(result==null)
+            {
+                Log.d(TAG,"No result found");
+            }
+            else
+            {
+                Log.d(TAG,result.toString());
+
+            }
+        }
+
+    }
 }
