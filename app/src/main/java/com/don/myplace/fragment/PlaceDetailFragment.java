@@ -5,8 +5,10 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -51,6 +53,7 @@ public class PlaceDetailFragment extends DialogFragment{
     EditText addressTxt;
     EditText typeTxt;
     EditText numberTxt;
+    ImageView callBtnImg;
 
     MapFragment mapFragment;
     GoogleMap googleMap;
@@ -107,6 +110,7 @@ public class PlaceDetailFragment extends DialogFragment{
         addressTxt = (EditText)view.findViewById(R.id.detail_addr_txt);
         typeTxt = (EditText)view.findViewById(R.id.detail_type_txt);
         numberTxt = (EditText)view.findViewById(R.id.detail_num_txt);
+        callBtnImg = (ImageView)view.findViewById(R.id.call_btn);
 
         mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(
@@ -134,6 +138,13 @@ public class PlaceDetailFragment extends DialogFragment{
         addressTxt.setText(place.getAddress());
         typeTxt.setText(place.getType());
         numberTxt.setText(place.getTelephone());
+        callBtnImg.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent callIntent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:"+place.getTelephone()));
+                startActivity(callIntent);
+            }
+        });
 
         builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
             @Override

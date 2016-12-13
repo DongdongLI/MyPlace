@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -42,19 +43,35 @@
                 android:gravity="center"
                 android:hint="type" />
 
-            <EditText
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/detail_num_txt"
                 android:layout_below="@+id/detail_type_txt"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:inputType="phone" />
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="37dp"
+                    android:layout_height="38dp"
+                    app:srcCompat="@drawable/call_icon"
+                    android:id="@+id/call_btn"
+                    android:maxHeight="2dp"
+                    android:maxWidth="2dp" />
+
+                <EditText
+                    android:hint="Phone Number"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/detail_num_txt"
+                    android:gravity="center"
+                    android:layout_weight="1"
+                    android:inputType="phone" />
+
+            </LinearLayout>
+
+
         </RelativeLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"></LinearLayout>
+
 
         <fragment
             android:id="@+id/map"
