@@ -34,7 +34,6 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     Button signInBtn;
     Button signOutBtn;
     Button disconnectBtn;
-    Button toMainBtn;
     TextView statusTextView;
 
 
@@ -47,20 +46,11 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
         signInBtn = (Button)findViewById(R.id.signin_btn);
         signOutBtn = (Button) findViewById(R.id.signout_btn);
-        disconnectBtn = (Button) findViewById(R.id.disconnect_btn);
-        toMainBtn = (Button) findViewById(R.id.toMain_btn);
         statusTextView = (TextView) findViewById(R.id.statusText);
 
         signInBtn.setOnClickListener(this);
         signOutBtn.setOnClickListener(this);
-        disconnectBtn.setOnClickListener(this);
 
-        toMainBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(LoginActivity.this, MainActivity.class));
-            }
-        });
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
@@ -93,6 +83,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
             GoogleSignInAccount acct = res.getSignInAccount();
             statusTextView.setText("Welcome "+ acct.getDisplayName());
             updateUI(true);
+            startActivity(new Intent(LoginActivity.this, MainActivity.class));
         }
         else {
             Log.d(TAG,"sign in failed");
@@ -131,7 +122,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        Toast.makeText(this,"requestCode: "+ requestCode, Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this,"requestCode: "+ requestCode, Toast.LENGTH_SHORT).show();
 
         if(requestCode == RC_SIGN_IN) {
             GoogleSignInResult res = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
@@ -154,9 +145,6 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
             case R.id.signout_btn:
                 signOut();
                 break;
-            case R.id.disconnect_btn:
-                revokeAccess();
-                break;
         }
     }
 
@@ -164,16 +152,12 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         if(signedIn){
             signInBtn.setVisibility(View.GONE);
             signOutBtn.setVisibility(View.VISIBLE);
-            disconnectBtn.setVisibility(View.VISIBLE);
-            toMainBtn.setVisibility(View.VISIBLE);
         }
         else {
             statusTextView.setText("Not signed in");
 
             signInBtn.setVisibility(View.VISIBLE);
             signOutBtn.setVisibility(View.GONE);
-            disconnectBtn.setVisibility(View.GONE);
-            toMainBtn.setVisibility(View.GONE);
         }
     }
 }

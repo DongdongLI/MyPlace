@@ -36,23 +36,6 @@
             android:layout_height="wrap_content"
             android:id="@+id/signout_btn" />
 
-        <Button
-            android:text="Disconnect"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/disconnect_btn" />
-
-        <Button
-            android:text="Sign Out || disconnect"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/signout_disconnect_btn" />
-
-        <Button
-            android:text="To Main"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/toMain_btn" />
     </LinearLayout>
 
 

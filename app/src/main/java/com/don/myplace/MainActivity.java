@@ -32,6 +32,8 @@ import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.OptionalPendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.firebase.database.DataSnapshot;
@@ -168,14 +170,19 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             }
         });
 
-        ((Button)findViewById(R.id.mock)).setOnClickListener(
-                new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        firebaseDatabase.child("users").child(currentUser.getDisplayName()).child("places").child("mocknew").setValue(new SavedPlace("","","",""));
-                    }
-                }
-        );
+        ((Button)findViewById(R.id.logout_btn)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
+                        new ResultCallback<Status>() {
+                            @Override
+                            public void onResult(@NonNull Status status) {
+                                finish();
+                            }
+                        }
+                );
+            }
+        });
     }
 
     @Override
