@@ -196,6 +196,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         }
         else {
             infoText.setText("you are out");
+            finish();
         }
     }
 
@@ -223,18 +224,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         } else {
             super.onActivityResult(requestCode, resultCode, data);
         }
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        //firebaseDatabase.removeEventListener(valueEventListener);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        //firebaseDatabase.addValueEventListener(valueEventListener);
     }
 
     @Override
