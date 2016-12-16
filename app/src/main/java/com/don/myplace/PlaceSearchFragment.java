@@ -4,8 +4,11 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.database.DataSetObserver;
 import android.location.Address;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
@@ -14,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -24,6 +28,11 @@ import android.widget.Toast;
 import com.don.myplace.adapter.AddressAdapter;
 import com.don.myplace.model.SavedPlace;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -42,6 +51,8 @@ public class PlaceSearchFragment extends DialogFragment {
 
     List<Address> searchResultList;
 
+    private static String APIKEY = null;
+
     private ManipulateDataInFragment listener;
 
     public static PlaceSearchFragment newInstance() {
@@ -57,6 +68,15 @@ public class PlaceSearchFragment extends DialogFragment {
         super.onAttach(context);
         if(context instanceof ManipulateDataInFragment)
             listener = (ManipulateDataInFragment) context;
+
+        if(APIKEY == null){
+            try {
+                ApplicationInfo ai = ((Context) listener).getPackageManager().getApplicationInfo(((Context) listener).getPackageName(), PackageManager.GET_META_DATA);
+                APIKEY = ai.metaData.getString("com.google.android.geo.API_KEY");
+            }catch (PackageManager.NameNotFoundException e){
+
+            }
+        }
     }
 
     @Override
@@ -114,9 +134,63 @@ public class PlaceSearchFragment extends DialogFragment {
                 }
         );
 
-
+        searchResultListView.setOnItemClickListener(
+                new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        SavedPlace place = new SavedPlace();
+                        String getPlaceIdUrl = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=-33.8670522,151.1957362&radius=500&types=food&name=cruise&key="+APIKEY;
+                        // need to figure out a way to find out the corresponding google place id
+//                        place.setPlaceId(searchResultList.get(position).);
+//                        listener.saveData(searchResultList.get(position));
+                        new GetData().execute(getPlaceIdUrl);
+                    }
+                }
+        );
 
         builder.setView(view);
         return builder.create();
+    }
+
+    class GetData extends AsyncTask<String, Void, String> {
+        BufferedReader br;
+
+        @Override
+        protected String doInBackground(String... params) {
+            try {
+                URL url = new URL(params[0]);
+                HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                con.setRequestMethod("GET");//POST
+
+                br = new BufferedReader(new InputStreamReader(con.getInputStream()));
+
+                StringBuilder sb = new StringBuilder();
+                String line = "";
+                while ((line = br.readLine()) != null) {
+                    sb.append(line + "\n");
+                }
+
+                return sb.toString();
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } finally {
+                try {
+                    br.close();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+
+            return null;
+
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            Log.d(TAG, s);
+        }
     }
 }
