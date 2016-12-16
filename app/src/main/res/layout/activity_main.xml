@@ -53,6 +53,11 @@
             android:id="@+id/add_new_place_btn"
             android:text="Add a new Place"
             android:layout_weight="1"/>
-
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/add_new_place_withGoogleAPI_btn"
+            android:text="Add a new Place with Google API"
+            android:layout_weight="1"/>
     </LinearLayout>
 </RelativeLayout>

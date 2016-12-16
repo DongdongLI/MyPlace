@@ -1,8 +1,9 @@
-package com.don.myplace.fragment;
+package com.don.myplace;
 
 
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -12,7 +13,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.InflateException;
@@ -23,8 +23,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 
 
-import com.don.myplace.ManipulateDataInFragment;
-import com.don.myplace.R;
 import com.don.myplace.model.SavedPlace;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -32,7 +30,6 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -117,7 +114,8 @@ public class PlaceDetailFragment extends DialogFragment{
                 new OnMapReadyCallback() {
                     @Override
                     public void onMapReady(GoogleMap googleMap) {
-                        Address address = new GeoTask(getActivity()).doInBackground(place.getAddress().toString());
+                        List<Address> addresses = new GeoTask(getActivity(), 1).doInBackground(place.getAddress().toString());
+                        Address address = addresses.get(0);
                         // this is the marker itself
                         Marker marker = googleMap.addMarker((new MarkerOptions()
                                 .position(new LatLng(address.getLatitude(), address.getLongitude()))
@@ -168,38 +166,54 @@ public class PlaceDetailFragment extends DialogFragment{
     }
 
 
-    class GeoTask extends AsyncTask<String, Void, Address>
+    static class GeoTask extends AsyncTask<String, Void, List<Address>>
     {
         Context mContext;
-        public GeoTask(Context context)
+        int limit;
+        //ProgressDialog progressDialog;
+
+        public GeoTask(Context context, int limit)
         {
             this.mContext=context;
+            this.limit = limit;
         }
+
         @Override
-        protected Address doInBackground(String... params) {
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+//            progressDialog = new ProgressDialog(mContext);
+//            progressDialog.setCancelable(false);
+//            progressDialog.setMessage("Loading... ");
+//            progressDialog.show();
+        }
+
+        @Override
+        protected List<Address> doInBackground(String... params) {
             List<Address> addressList=null;
 
             Geocoder geocoder=new Geocoder(mContext);
 
             try {
-                addressList = geocoder.getFromLocationName(params[0], 5);
+                addressList = geocoder.getFromLocationName(params[0], limit);
                 if(addressList == null || addressList.size()==0)
                     return null;
-                return addressList.get(0);
+                return addressList;
             } catch (IOException e) {
                 e.printStackTrace();
             }
             return null;
         }
         @Override
-        protected void onPostExecute(Address result) {
+        protected void onPostExecute(List<Address> result) {
+            //progressDialog.hide();
             if(result==null)
             {
-                Log.d(TAG,"No result found");
+                Log.d("GeoTask","No result found");
             }
             else
             {
-                Log.d(TAG,result.toString());
+                Log.d("GeoTask",result.toString());
 
             }
         }

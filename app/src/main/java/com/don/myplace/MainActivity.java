@@ -2,11 +2,8 @@ package com.don.myplace;
 
 import android.app.Activity;
 import android.app.DialogFragment;
-import android.content.Context;
 import android.content.Intent;
-import android.location.Address;
-import android.location.Geocoder;
-import android.os.AsyncTask;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -14,12 +11,10 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.don.myplace.fragment.PlaceDetailFragment;
 import com.don.myplace.model.SavedPlace;
 import com.don.myplace.model.User;
 import com.firebase.ui.database.FirebaseListAdapter;
@@ -41,9 +36,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
-import java.io.IOException;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, ManipulateDataInFragment{
 
@@ -183,6 +175,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 );
             }
         });
+
+        ((Button)findViewById(R.id.add_new_place_withGoogleAPI_btn)).setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        DialogFragment newFragment = new PlaceSearchFragment();
+                        newFragment.show(getFragmentManager(), "search");
+                    }
+                }
+        );
     }
 
     @Override
