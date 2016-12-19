@@ -27,6 +27,7 @@ import android.widget.Toast;
 
 import com.don.myplace.adapter.AddressAdapter;
 import com.don.myplace.model.SavedPlace;
+import com.don.myplace.parser.PlaceParser;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -139,7 +140,9 @@ public class PlaceSearchFragment extends DialogFragment {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                         SavedPlace place = new SavedPlace();
-                        String getPlaceIdUrl = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=-33.8670522,151.1957362&radius=500&types=food&name=cruise&key="+APIKEY;
+                        String getPlaceIdUrl = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location="
+                                +MainActivity.currLocation.getLatitude()+ ","+MainActivity.currLocation.getLongitude()
+                                +"&radius=500&types=food&key="+APIKEY;
                         // need to figure out a way to find out the corresponding google place id
 //                        place.setPlaceId(searchResultList.get(position).);
 //                        listener.saveData(searchResultList.get(position));
@@ -190,7 +193,7 @@ public class PlaceSearchFragment extends DialogFragment {
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-            Log.d(TAG, s);
+            Log.d(TAG, PlaceParser.parse(s).toString());
         }
     }
 }

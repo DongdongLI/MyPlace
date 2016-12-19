@@ -1,10 +1,18 @@
 package com.don.myplace;
 
+import android.*;
+import android.Manifest;
 import android.app.Activity;
 import android.app.DialogFragment;
+import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -39,11 +47,14 @@ import com.google.firebase.database.ValueEventListener;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, ManipulateDataInFragment{
 
+
     TextView infoText;
     Button addPlaceBtn;
 
     final String TAG = "mainactivity";
     GoogleApiClient mGoogleApiClient;
+
+
     DatabaseReference firebaseDatabase;
 
     ValueEventListener valueEventListener;
@@ -53,6 +64,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     OptionalPendingResult<GoogleSignInResult> opr;
 
     FirebaseListAdapter mAdapter;
+
+    LocationManager locationManager;
+    LocationListener locationListener;
+
+    static Location currLocation;
 
     final int PLACE_PICKER_REQUEST = 1;
 
@@ -65,6 +81,18 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         addPlaceBtn = (Button)findViewById(R.id.add_new_place_btn);
         ListView listView = (ListView)findViewById(R.id.placeList);
 
+        locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        locationListener = new MyLocationListener();
+
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)!= PackageManager.PERMISSION_GRANTED)
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 111);
+        try {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 500, 1, locationListener);
+        }
+        catch (SecurityException e){
+            Log.d(TAG, "No permission. ");
+
+        }
         // google sign in stuff
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
@@ -185,6 +213,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                     }
                 }
         );
+
     }
 
     @Override
@@ -201,6 +230,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             finish();
         }
     }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -249,5 +279,32 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         firebaseDatabase.child("users").child(currentUser.getDisplayName()).child("places").child(place.getPlaceId()).setValue(place);
     }
 
+    class MyLocationListener implements LocationListener {
+        @Override
+        public void onLocationChanged(Location location) {
+            Log.d(TAG, location.toString());
+            if(currLocation == null)
+                currLocation = location;
+            else {
+                currLocation.setLatitude(location.getLatitude());
+                currLocation.setLongitude(location.getLongitude());
+            }
+            infoText.setText(infoText.getText().toString()+", "+currLocation.getLatitude()+", "+currLocation.getLongitude());
+        }
 
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+            Log.d(TAG, "changed!!");
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+
+        }
+    }
 }
