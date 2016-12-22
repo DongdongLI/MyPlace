@@ -95,7 +95,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
         currentUser = getIntent().getExtras().getParcelable("currentUser");
 
-        // google sign in stuff
         /*
         * Note the sign in user will be passed in from the previous activity*/
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -109,17 +108,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
         firebaseDatabase = FirebaseDatabase.getInstance().getReference();
 
-        // attempt to sign in silently
-//        opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
-//        if(opr.isDone()) {
-//            currentUser = opr.get().getSignInAccount();
-//            infoText.setText(currentUser.getDisplayName());
-//            if(currentUser == null)
-//                Log.d(TAG, "what the hell?");
-//        }
-//        else {
-//            infoText.setText("you are out");
-//        }
 
         // in case data change in fire base
         valueEventListener = new ValueEventListener() {
@@ -194,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             }
         });
 
-        ((Button)findViewById(R.id.logout_btn)).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.logout_btn).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
@@ -208,7 +196,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             }
         });
 
-        ((Button)findViewById(R.id.add_new_place_withGoogleAPI_btn)).setOnClickListener(
+        findViewById(R.id.add_new_place_withGoogleAPI_btn).setOnClickListener(
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -220,20 +208,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-//        opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
-//        if(opr.isDone()) {
-//            currentUser = opr.get().getSignInAccount();
-//            infoText.setText(currentUser.getDisplayName());
-//        }
-//        else {
-//            infoText.setText("you are out");
-//            finish();
-//        }
-    }
 
 
     @Override
@@ -243,17 +217,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 && resultCode == Activity.RESULT_OK) {
 
             final Place place = PlacePicker.getPlace(this, data);
-            final CharSequence name = place.getName();
-            final CharSequence address = place.getAddress();
-            String attributions = (String) place.getAttributions();
 
             SavedPlace newPlace = new SavedPlace(place.getName().toString(), place.getPlaceTypes().toString(), place.getAddress().toString(), place.getPhoneNumber().toString());
             newPlace.setPlaceId(place.getId());
 
             saveData(newPlace);
-            if (attributions == null) {
-                attributions = "";
-            }
 
             Log.d(TAG, place.toString());
 

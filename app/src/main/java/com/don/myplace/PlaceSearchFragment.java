@@ -61,6 +61,7 @@ public class PlaceSearchFragment extends DialogFragment {
 
     private ManipulateDataInFragment listener;
 
+    // TODO: will be useful when saving the new places
     public static PlaceSearchFragment newInstance() {
         PlaceSearchFragment placeSearchFragment = new PlaceSearchFragment();
         Bundle bundle = new Bundle();
@@ -100,7 +101,6 @@ public class PlaceSearchFragment extends DialogFragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle("Search");
 
-        //setPlace((SavedPlace)getArguments().getSerializable(PLACE_IN_FRAGMENT));
         LayoutInflater inflater = getActivity().getLayoutInflater();
 
         searchResultList = new ArrayList<>();
@@ -129,7 +129,6 @@ public class PlaceSearchFragment extends DialogFragment {
                             Toast.makeText((Context)listener, "Still trying to find your location. One sec... ",Toast.LENGTH_SHORT).show();
                         else{
                             String keyword = searchEditText.getText().toString().trim();
-                            //List<SavedPlace> temp = new PlaceDetailFragment.GeoTask(getActivity(), 10).doInBackground(keyword);
                             new GetData().execute(keyword);
 
                             InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -148,27 +147,18 @@ public class PlaceSearchFragment extends DialogFragment {
                         else {
                             TextView addressTextview = (TextView) view.findViewById(R.id.placeTitle);
 
-                            SavedPlace place = new SavedPlace();
                             String getPlaceIdUrl="";
                             Log.d(TAG, "search query: "+addressTextview.getText().toString());
                             try {
-//                                getPlaceIdUrl = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location="
-//                                        + MainActivity.currLocation.getLatitude() + "," + MainActivity.currLocation.getLongitude()
-//                                        //+"&radius=500&types=food&key="+APIKEY;
-//                                        //+ "&radius=500&q=restaurants%20near%20sarasota&key=" + APIKEY;
-//                                        + "&radius=500&q=" + URLEncoder.encode(addressTextview.getText().toString(), "UTF-8") + "&key=" + APIKEY;
                                 getPlaceIdUrl = "https://maps.googleapis.com/maps/api/place/textsearch/json?query="
                                         + URLEncoder.encode(addressTextview.getText().toString(), "UTF-8")
-                                //        + URLEncoder.encode(searchEditText.getText().toString(), "UTF-8")
                                         +"&location="+ MainActivity.currLocation.getLatitude() + "," + MainActivity.currLocation.getLongitude()
                                         + "&radius=500"
                                         + "&key=" + APIKEY;
                             } catch (UnsupportedEncodingException e){
                                 Log.d(TAG, e.getMessage());
                             }
-                            // need to figure out a way to find out the corresponding google place id
-//                        place.setPlaceId(searchResultList.get(position).);
-//                        listener.saveData(searchResultList.get(position));
+
                             new GetData().execute(getPlaceIdUrl);
                         }
                     }
@@ -187,7 +177,6 @@ public class PlaceSearchFragment extends DialogFragment {
             try {
                 String getPlaceIdUrl = "https://maps.googleapis.com/maps/api/place/textsearch/json?query="
                         + URLEncoder.encode(params[0], "UTF-8")
-                        //        + URLEncoder.encode(searchEditText.getText().toString(), "UTF-8")
                         +"&location="+ MainActivity.currLocation.getLatitude() + "," + MainActivity.currLocation.getLongitude()
                         + "&radius=50000"
                         + "&key=" + APIKEY;
@@ -203,11 +192,8 @@ public class PlaceSearchFragment extends DialogFragment {
                 while ((line = br.readLine()) != null) {
                     sb.append(line + "\n");
                 }
-                //Log.d(TAG, sb.toString());
                 return PlaceParser.parse(sb.toString());
             } catch (Exception e) {
-                // TODO Auto-generated catch block
-               // e.printStackTrace();
                 Log.d(TAG, e.getMessage());
             }
             return null;

@@ -33,7 +33,6 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
 
     Button signInBtn;
     Button signOutBtn;
-    Button disconnectBtn;
     TextView statusTextView;
 
 
