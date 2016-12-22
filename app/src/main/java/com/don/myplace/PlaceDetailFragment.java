@@ -64,7 +64,6 @@ public class PlaceDetailFragment extends DialogFragment{
         Bundle bundle = new Bundle();
         bundle.putSerializable(PLACE_IN_FRAGMENT, place);
         fragment.setArguments(bundle);
-        //setPlace(place);
         return fragment;
     }
 

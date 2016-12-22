@@ -57,7 +57,7 @@ public class PlaceSearchFragment extends DialogFragment {
 
     ArrayAdapter<SavedPlace> adapter;
 
-    private static String APIKEY = null;
+    static String APIKEY = null;
 
     private ManipulateDataInFragment listener;
 
@@ -142,25 +142,7 @@ public class PlaceSearchFragment extends DialogFragment {
                 new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        if(MainActivity.currLocation == null)
-                            Toast.makeText((Context)listener, "Still try to obtain your location, hold on... ",Toast.LENGTH_SHORT).show();
-                        else {
-                            TextView addressTextview = (TextView) view.findViewById(R.id.placeTitle);
-
-                            String getPlaceIdUrl="";
-                            Log.d(TAG, "search query: "+addressTextview.getText().toString());
-                            try {
-                                getPlaceIdUrl = "https://maps.googleapis.com/maps/api/place/textsearch/json?query="
-                                        + URLEncoder.encode(addressTextview.getText().toString(), "UTF-8")
-                                        +"&location="+ MainActivity.currLocation.getLatitude() + "," + MainActivity.currLocation.getLongitude()
-                                        + "&radius=500"
-                                        + "&key=" + APIKEY;
-                            } catch (UnsupportedEncodingException e){
-                                Log.d(TAG, e.getMessage());
-                            }
-
-                            new GetData().execute(getPlaceIdUrl);
-                        }
+                        new MainActivity.SavePlaceByInjectingPhonenumber().execute(searchResultList.get(position));
                     }
                 }
         );

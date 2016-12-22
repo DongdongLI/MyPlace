@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -25,6 +26,7 @@ import android.widget.Toast;
 
 import com.don.myplace.model.SavedPlace;
 import com.don.myplace.model.User;
+import com.don.myplace.parser.PlaceParser;
 import com.firebase.ui.database.FirebaseListAdapter;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -45,6 +47,11 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, ManipulateDataInFragment{
 
 
@@ -55,7 +62,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     GoogleApiClient mGoogleApiClient;
 
 
-    DatabaseReference firebaseDatabase;
+    static DatabaseReference firebaseDatabase;
 
     ValueEventListener valueEventListener;
 
@@ -251,6 +258,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         firebaseDatabase.child("users").child(currentUser.getDisplayName()).child("places").child(place.getPlaceId()).setValue(place);
     }
 
+    public static void staticSaveData(SavedPlace place) {
+        firebaseDatabase.child("users").child(currentUser.getDisplayName()).child("places").child(place.getPlaceId()).setValue(place);
+    }
+
     class MyLocationListener implements LocationListener {
         @Override
         public void onLocationChanged(Location location) {
@@ -276,6 +287,47 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         @Override
         public void onProviderDisabled(String provider) {
 
+        }
+    }
+
+
+    static class SavePlaceByInjectingPhonenumber extends AsyncTask<SavedPlace, Void, SavedPlace> {
+        BufferedReader br;
+
+        @Override
+        protected SavedPlace doInBackground(SavedPlace... params) {
+            try {
+                String getPlaceIdUrl = "https://maps.googleapis.com/maps/api/place/details/json?"
+                        + "placeid="+params[0].getPlaceId()
+                        + "&key=" + PlaceSearchFragment.APIKEY;
+                URL url = new URL(getPlaceIdUrl);
+                Log.d("PlaceSearchFragment", "url is: "+getPlaceIdUrl);
+                HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                con.setRequestMethod("GET");//POST
+
+                br = new BufferedReader(new InputStreamReader(con.getInputStream()));
+
+                StringBuilder sb = new StringBuilder();
+                String line = "";
+                while ((line = br.readLine()) != null) {
+                    sb.append(line + "\n");
+                }
+
+                params[0].setTelephone(PlaceParser.parsePhoneNumber(sb.toString()));
+
+                return params[0];
+            } catch (Exception e) {
+                Log.d("PlaceSearchFragment", e.getMessage());
+            }
+            return null;
+
+        }
+
+        @Override
+        protected void onPostExecute(SavedPlace res) {
+            super.onPostExecute(res);
+            staticSaveData(res);
+            //Log.d("PlaceSearchFragment", "phone number is: "+ res);
         }
     }
 }

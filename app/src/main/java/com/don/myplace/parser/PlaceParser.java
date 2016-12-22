@@ -33,13 +33,23 @@ public class PlaceParser {
                 savedPlace = new SavedPlace();
                 savedPlace.setPlaceId(obj.getString("place_id"));
                 savedPlace.setAddress(obj.getString("formatted_address"));
-                savedPlace.setTelephone("123456");
+                savedPlace.setTelephone(null);
                 savedPlace.setTitle(obj.getString("name"));
-                // TODO: where is the dame phone number??
-                //res.add(obj.getString("place_id"));
                 res.add(savedPlace);            }
 
             return res;
+        }catch (JSONException e){
+            Log.d("PlaceSearchFragment", e.getMessage());
+        }
+        return null;
+    }
+
+    public static String parsePhoneNumber (String in) {
+        try {
+            JSONObject root = new JSONObject(in);
+            JSONObject obj = root.getJSONObject("result");
+
+            return obj.getString("formatted_phone_number");
         }catch (JSONException e){
             Log.d("PlaceSearchFragment", e.getMessage());
         }
