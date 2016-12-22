@@ -10,6 +10,7 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import com.don.myplace.R;
+import com.don.myplace.model.SavedPlace;
 
 import java.util.List;
 
@@ -17,12 +18,12 @@ import java.util.List;
  * Created by dli on 12/15/2016.
  */
 
-public class AddressAdapter extends ArrayAdapter<Address> {
-    List<Address> mData;
+public class AddressAdapter extends ArrayAdapter<SavedPlace> {
+    List<SavedPlace> mData;
     Context mContext;
     int mResource;
 
-    public AddressAdapter(Context context, int resource,List<Address> objects) {
+    public AddressAdapter(Context context, int resource,List<SavedPlace> objects) {
         super(context, resource, objects);
         this.mContext=context;
         this.mData=objects;
@@ -37,15 +38,11 @@ public class AddressAdapter extends ArrayAdapter<Address> {
             LayoutInflater inflater=(LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView=inflater.inflate(mResource, parent, false);
         }
-        Address address=mData.get(position);
+        SavedPlace savedPlace=mData.get(position);
 
 
         TextView addressDetail = (TextView) convertView.findViewById(R.id.placeTitle);
-        String addrStr = "";
-        int indexMax = address.getMaxAddressLineIndex();
-        for(int i=1;i<=indexMax;i++)
-            addrStr+=(address.getAddressLine(i))+", ";
-        addressDetail.setText(addrStr.substring(0, addrStr.length()-2));
+        addressDetail.setText(savedPlace.getAddress());
         return convertView;
     }
 

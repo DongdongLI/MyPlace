@@ -190,6 +190,10 @@ public class PlaceDetailFragment extends DialogFragment{
 
         @Override
         protected List<Address> doInBackground(String... params) {
+
+
+
+
             List<Address> addressList=null;
 
             Geocoder geocoder=new Geocoder(mContext);

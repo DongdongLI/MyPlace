@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
     ValueEventListener valueEventListener;
 
-    GoogleSignInAccount currentUser;
+    static GoogleSignInAccount currentUser;
 
     OptionalPendingResult<GoogleSignInResult> opr;
 
@@ -91,9 +91,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         }
         catch (SecurityException e){
             Log.d(TAG, "No permission. ");
-
         }
+
+        currentUser = getIntent().getExtras().getParcelable("currentUser");
+
         // google sign in stuff
+        /*
+        * Note the sign in user will be passed in from the previous activity*/
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
                 .build();
@@ -106,16 +110,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         firebaseDatabase = FirebaseDatabase.getInstance().getReference();
 
         // attempt to sign in silently
-        opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
-        if(opr.isDone()) {
-            currentUser = opr.get().getSignInAccount();
-            infoText.setText(currentUser.getDisplayName());
-            if(currentUser == null)
-                Log.d(TAG, "what the hell?");
-        }
-        else {
-            infoText.setText("you are out");
-        }
+//        opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
+//        if(opr.isDone()) {
+//            currentUser = opr.get().getSignInAccount();
+//            infoText.setText(currentUser.getDisplayName());
+//            if(currentUser == null)
+//                Log.d(TAG, "what the hell?");
+//        }
+//        else {
+//            infoText.setText("you are out");
+//        }
 
         // in case data change in fire base
         valueEventListener = new ValueEventListener() {
@@ -220,15 +224,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     protected void onStart() {
         super.onStart();
 
-        opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
-        if(opr.isDone()) {
-            currentUser = opr.get().getSignInAccount();
-            infoText.setText(currentUser.getDisplayName());
-        }
-        else {
-            infoText.setText("you are out");
-            finish();
-        }
+//        opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
+//        if(opr.isDone()) {
+//            currentUser = opr.get().getSignInAccount();
+//            infoText.setText(currentUser.getDisplayName());
+//        }
+//        else {
+//            infoText.setText("you are out");
+//            finish();
+//        }
     }
 
 
@@ -289,7 +293,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 currLocation.setLatitude(location.getLatitude());
                 currLocation.setLongitude(location.getLongitude());
             }
-            infoText.setText(infoText.getText().toString()+", "+currLocation.getLatitude()+", "+currLocation.getLongitude());
         }
 
         @Override

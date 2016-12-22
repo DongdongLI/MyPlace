@@ -23,6 +23,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.don.myplace.adapter.AddressAdapter;
@@ -32,8 +33,10 @@ import com.don.myplace.parser.PlaceParser;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -50,7 +53,9 @@ public class PlaceSearchFragment extends DialogFragment {
     EditText searchEditText;
     Button searchBtn;
 
-    List<Address> searchResultList;
+    List<SavedPlace> searchResultList;
+
+    ArrayAdapter<SavedPlace> adapter;
 
     private static String APIKEY = null;
 
@@ -108,7 +113,7 @@ public class PlaceSearchFragment extends DialogFragment {
         searchEditText = (EditText) view.findViewById(R.id.search_txt);
         searchBtn = (Button)view.findViewById(R.id.search_btn);
         searchResultListView = (ListView)view.findViewById(R.id.search_result_list);
-        ArrayAdapter<Address> adapter = new AddressAdapter(getActivity(), R.layout.row_item_layout, searchResultList);
+        adapter = new AddressAdapter(getActivity(), R.layout.row_item_layout, searchResultList);
 
         searchResultListView.setAdapter(adapter);
         adapter.setNotifyOnChange(true);
@@ -120,13 +125,12 @@ public class PlaceSearchFragment extends DialogFragment {
                         if(searchEditText.getText().length()==0 || searchEditText.getText().toString().length()==0) {
                             Toast.makeText((Context)listener, "Search text should not be empty. ",Toast.LENGTH_SHORT).show();
                         }
+                        else if(MainActivity.currLocation == null)
+                            Toast.makeText((Context)listener, "Still trying to find your location. One sec... ",Toast.LENGTH_SHORT).show();
                         else{
                             String keyword = searchEditText.getText().toString().trim();
-                            List<Address> temp = new PlaceDetailFragment.GeoTask(getActivity(), 10).doInBackground(keyword);
-
-
-                            searchResultList.clear();
-                            searchResultList.addAll(temp) ;
+                            //List<SavedPlace> temp = new PlaceDetailFragment.GeoTask(getActivity(), 10).doInBackground(keyword);
+                            new GetData().execute(keyword);
 
                             InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
                             imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
@@ -139,14 +143,34 @@ public class PlaceSearchFragment extends DialogFragment {
                 new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        SavedPlace place = new SavedPlace();
-                        String getPlaceIdUrl = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location="
-                                +MainActivity.currLocation.getLatitude()+ ","+MainActivity.currLocation.getLongitude()
-                                +"&radius=500&types=food&key="+APIKEY;
-                        // need to figure out a way to find out the corresponding google place id
+                        if(MainActivity.currLocation == null)
+                            Toast.makeText((Context)listener, "Still try to obtain your location, hold on... ",Toast.LENGTH_SHORT).show();
+                        else {
+                            TextView addressTextview = (TextView) view.findViewById(R.id.placeTitle);
+
+                            SavedPlace place = new SavedPlace();
+                            String getPlaceIdUrl="";
+                            Log.d(TAG, "search query: "+addressTextview.getText().toString());
+                            try {
+//                                getPlaceIdUrl = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location="
+//                                        + MainActivity.currLocation.getLatitude() + "," + MainActivity.currLocation.getLongitude()
+//                                        //+"&radius=500&types=food&key="+APIKEY;
+//                                        //+ "&radius=500&q=restaurants%20near%20sarasota&key=" + APIKEY;
+//                                        + "&radius=500&q=" + URLEncoder.encode(addressTextview.getText().toString(), "UTF-8") + "&key=" + APIKEY;
+                                getPlaceIdUrl = "https://maps.googleapis.com/maps/api/place/textsearch/json?query="
+                                        + URLEncoder.encode(addressTextview.getText().toString(), "UTF-8")
+                                //        + URLEncoder.encode(searchEditText.getText().toString(), "UTF-8")
+                                        +"&location="+ MainActivity.currLocation.getLatitude() + "," + MainActivity.currLocation.getLongitude()
+                                        + "&radius=500"
+                                        + "&key=" + APIKEY;
+                            } catch (UnsupportedEncodingException e){
+                                Log.d(TAG, e.getMessage());
+                            }
+                            // need to figure out a way to find out the corresponding google place id
 //                        place.setPlaceId(searchResultList.get(position).);
 //                        listener.saveData(searchResultList.get(position));
-                        new GetData().execute(getPlaceIdUrl);
+                            new GetData().execute(getPlaceIdUrl);
+                        }
                     }
                 }
         );
@@ -155,13 +179,20 @@ public class PlaceSearchFragment extends DialogFragment {
         return builder.create();
     }
 
-    class GetData extends AsyncTask<String, Void, String> {
+    class GetData extends AsyncTask<String, Void, List<SavedPlace>> {
         BufferedReader br;
 
         @Override
-        protected String doInBackground(String... params) {
+        protected List<SavedPlace> doInBackground(String... params) {
             try {
-                URL url = new URL(params[0]);
+                String getPlaceIdUrl = "https://maps.googleapis.com/maps/api/place/textsearch/json?query="
+                        + URLEncoder.encode(params[0], "UTF-8")
+                        //        + URLEncoder.encode(searchEditText.getText().toString(), "UTF-8")
+                        +"&location="+ MainActivity.currLocation.getLatitude() + "," + MainActivity.currLocation.getLongitude()
+                        + "&radius=50000"
+                        + "&key=" + APIKEY;
+                URL url = new URL(getPlaceIdUrl);
+                Log.d(TAG, "url is: "+getPlaceIdUrl);
                 HttpURLConnection con = (HttpURLConnection) url.openConnection();
                 con.setRequestMethod("GET");//POST
 
@@ -172,28 +203,27 @@ public class PlaceSearchFragment extends DialogFragment {
                 while ((line = br.readLine()) != null) {
                     sb.append(line + "\n");
                 }
-
-                return sb.toString();
+                //Log.d(TAG, sb.toString());
+                return PlaceParser.parse(sb.toString());
             } catch (Exception e) {
                 // TODO Auto-generated catch block
-                e.printStackTrace();
-            } finally {
-                try {
-                    br.close();
-                } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
+               // e.printStackTrace();
+                Log.d(TAG, e.getMessage());
             }
-
             return null;
 
         }
 
         @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            Log.d(TAG, PlaceParser.parse(s).toString());
+        protected void onPostExecute(List<SavedPlace> savedPlaces) {
+            super.onPostExecute(savedPlaces);
+            searchResultList.clear();
+            if(savedPlaces != null) {
+                searchResultList.addAll(savedPlaces);
+                adapter.notifyDataSetChanged();
+            }
+            else
+                Log.d(TAG, "it is null...");
         }
     }
 }

@@ -83,7 +83,10 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
             GoogleSignInAccount acct = res.getSignInAccount();
             statusTextView.setText("Welcome "+ acct.getDisplayName());
             updateUI(true);
-            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+
+            Intent intent = new Intent(new Intent(LoginActivity.this, MainActivity.class));
+            intent.putExtra("currentUser", acct);
+            startActivity(intent);
         }
         else {
             Log.d(TAG,"sign in failed");
