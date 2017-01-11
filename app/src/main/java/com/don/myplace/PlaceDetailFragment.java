@@ -113,17 +113,8 @@ public class PlaceDetailFragment extends DialogFragment{
                 new OnMapReadyCallback() {
                     @Override
                     public void onMapReady(GoogleMap googleMap) {
-                        List<Address> addresses = new GeoTask(getActivity(), 1).doInBackground(place.getAddress().toString());
-                        Address address = addresses.get(0);
-                        // this is the marker itself
-                        Marker marker = googleMap.addMarker((new MarkerOptions()
-                                .position(new LatLng(address.getLatitude(), address.getLongitude()))
-                                .draggable(false)
-                        ));
-                        googleMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
-                        // this will move the camera to certain area and zoom in
-                        CameraUpdate cu = CameraUpdateFactory.newLatLngZoom(new LatLng(address.getLatitude(), address.getLongitude()), 16F);
-                        googleMap.moveCamera(cu);
+                        googleMap.clear();
+                        new GeoTask(getActivity(), 1).execute(place.getAddress().toString());
                     }
                 }
         );
@@ -164,12 +155,38 @@ public class PlaceDetailFragment extends DialogFragment{
         return builder.create();
     }
 
+    private void addMarkerWhenReady(final List<Address> addresses) {
+        Log.d(TAG, "i am in addMarkerWhenReady");
+        mapFragment.getMapAsync(
+                new OnMapReadyCallback() {
+                    @Override
+                    public void onMapReady(GoogleMap googleMap) {
+                        googleMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
+                        if (addresses != null) {
+                            Address address = addresses.get(0);
+                            // this is the marker itself
+                            Marker marker = googleMap.addMarker((new MarkerOptions()
+                                    .position(new LatLng(address.getLatitude(), address.getLongitude()))
+                                    .draggable(false)
+                            ));
 
-    static class GeoTask extends AsyncTask<String, Void, List<Address>>
+                            // this will move the camera to certain area and zoom in
+                            CameraUpdate cu = CameraUpdateFactory.newLatLngZoom(new LatLng(address.getLatitude(), address.getLongitude()), 16F);
+                            googleMap.moveCamera(cu);
+                        }
+                        else {
+                            CameraUpdate cu = CameraUpdateFactory.newLatLngZoom(new LatLng(0, 0), 16F);
+                            googleMap.moveCamera(cu);
+                        }
+                    }
+
+                });
+    }
+
+    class GeoTask extends AsyncTask<String, Void, List<Address>>
     {
         Context mContext;
         int limit;
-        //ProgressDialog progressDialog;
 
         public GeoTask(Context context, int limit)
         {
@@ -177,24 +194,10 @@ public class PlaceDetailFragment extends DialogFragment{
             this.limit = limit;
         }
 
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-
-//            progressDialog = new ProgressDialog(mContext);
-//            progressDialog.setCancelable(false);
-//            progressDialog.setMessage("Loading... ");
-//            progressDialog.show();
-        }
 
         @Override
         protected List<Address> doInBackground(String... params) {
-
-
-
-
             List<Address> addressList=null;
-
             Geocoder geocoder=new Geocoder(mContext);
 
             try {
@@ -209,15 +212,15 @@ public class PlaceDetailFragment extends DialogFragment{
         }
         @Override
         protected void onPostExecute(List<Address> result) {
-            //progressDialog.hide();
-            if(result==null)
+            if(result==null || result.size()==0)
             {
                 Log.d("GeoTask","No result found");
+                addMarkerWhenReady(null);
             }
             else
             {
                 Log.d("GeoTask",result.toString());
-
+                addMarkerWhenReady(result);
             }
         }
 
