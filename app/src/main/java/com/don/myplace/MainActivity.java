@@ -17,6 +17,9 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -24,6 +27,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.don.myplace.adapter.SavedPlaceAdapter;
 import com.don.myplace.model.SavedPlace;
 import com.don.myplace.model.User;
 import com.don.myplace.parser.PlaceParser;
@@ -41,6 +45,7 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlacePicker;
+import com.google.android.gms.maps.GoogleMap;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -51,12 +56,15 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, ManipulateDataInFragment{
 
 
     TextView infoText;
     Button addPlaceBtn;
+    ListView listView;
 
     final String TAG = "mainactivity";
     GoogleApiClient mGoogleApiClient;
@@ -71,6 +79,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     OptionalPendingResult<GoogleSignInResult> opr;
 
     FirebaseListAdapter mAdapter;
+    SavedPlaceAdapter filteredAdapter;
+    List<SavedPlace> filteredSavedPlace;
 
     LocationManager locationManager;
     LocationListener locationListener;
@@ -86,7 +96,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
         infoText = (TextView)findViewById(R.id.info_text);
         addPlaceBtn = (Button)findViewById(R.id.add_new_place_btn);
-        ListView listView = (ListView)findViewById(R.id.placeList);
+        listView = (ListView)findViewById(R.id.placeList);
+
+        filteredSavedPlace = new ArrayList<>();
 
         locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         locationListener = new MyLocationListener();
@@ -101,7 +113,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         }
 
         currentUser = getIntent().getExtras().getParcelable("currentUser");
-
+        infoText.setText("Hi "+currentUser.getDisplayName());
         /*
         * Note the sign in user will be passed in from the previous activity*/
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -157,6 +169,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         };
         listView.setAdapter(mAdapter);
         firebaseDatabase.addValueEventListener(valueEventListener);
+
+        // this adapter is used for the filtered subset of all of the places
+        filteredAdapter = new SavedPlaceAdapter(this, R.layout.row_item_layout_simple, filteredSavedPlace);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -215,7 +230,64 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.sort_menu, menu);
+        return true;
+    }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_item1:
+                //Log.d("demo1","item 1 clicked");
+                showEntryBasedOnCategory("all");
+                break;
+
+            case R.id.menu_item2:
+                Log.d("demo1","item 2 clicked");
+                showEntryBasedOnCategory("restaurant");
+                break;
+
+
+            default:
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void showEntryBasedOnCategory(final String category) {
+        if(category.equals("all")){
+            listView.setAdapter(mAdapter);
+            firebaseDatabase.addValueEventListener(valueEventListener);
+            return;
+        }
+
+        listView.setAdapter(filteredAdapter);
+        filteredAdapter.setNotifyOnChange(true);
+
+        firebaseDatabase.child("users").child(currentUser.getDisplayName()).child("places").orderByChild("type").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()){
+                    for(DataSnapshot item: dataSnapshot.getChildren()){
+                        if(item.child("type").toString().contains(category+ "") || item.child("type").toString().contains(Place.TYPE_RESTAURANT+ "")) {
+                            filteredAdapter.add( new SavedPlace(item.getValue().toString()) );
+                            //Log.d(TAG, filteredSavedPlace.toString());
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -224,7 +296,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 && resultCode == Activity.RESULT_OK) {
 
             final Place place = PlacePicker.getPlace(this, data);
-
             SavedPlace newPlace = new SavedPlace(place.getName().toString(), place.getPlaceTypes().toString(), place.getAddress().toString(), place.getPhoneNumber().toString());
             newPlace.setPlaceId(place.getId());
 
@@ -276,7 +347,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
         @Override
         public void onStatusChanged(String provider, int status, Bundle extras) {
-            Log.d(TAG, "changed!!");
+            //Log.d(TAG, "changed!!");
         }
 
         @Override
@@ -288,6 +359,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         public void onProviderDisabled(String provider) {
 
         }
+
     }
 
 

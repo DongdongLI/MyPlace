@@ -35,6 +35,7 @@ public class PlaceParser {
                 savedPlace.setAddress(obj.getString("formatted_address"));
                 savedPlace.setTelephone(null);
                 savedPlace.setTitle(obj.getString("name"));
+                savedPlace.setType(obj.getString("types"));
                 res.add(savedPlace);            }
 
             return res;

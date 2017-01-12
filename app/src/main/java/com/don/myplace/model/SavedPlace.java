@@ -63,10 +63,27 @@ public class SavedPlace implements Serializable{
         this.telephone = telephone;
     }
 
+    public SavedPlace(String str) {
+        setPlaceId(str.substring(str.indexOf("placeId=")+8, str.indexOf("}")));
+        str = str.substring(0, str.indexOf("placeId="));
+
+        setTelephone(str.substring(str.indexOf("telephone=")+10, str.length()-2));
+        str = str.substring(0, str.indexOf("telephone="));
+
+        setType(str.substring(str.indexOf("type=")+5, str.length()-2));
+        str = str.substring(0, str.indexOf("type="));
+
+        setTitle(str.substring(str.indexOf("title=")+6, str.length()-2));
+        str = str.substring(0, str.indexOf("title="));
+
+        setAddress(str.substring(str.indexOf("address=")+8, str.length()-2));
+    }
+
     @Override
     public String toString() {
         return "Place{" +
-                "title='" + title + '\'' +
+                "placeId='" + placeId+ '\'' +
+                ", title='" + title + '\'' +
                 ", type='" + type + '\'' +
                 ", address='" + address + '\'' +
                 ", telephone='" + telephone + '\'' +
