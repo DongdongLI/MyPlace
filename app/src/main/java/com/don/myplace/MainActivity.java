@@ -267,7 +267,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         listView.setAdapter(filteredAdapter);
         filteredAdapter.setNotifyOnChange(true);
 
-        firebaseDatabase.child("users").child(currentUser.getDisplayName()).child("places").orderByChild("type").addValueEventListener(new ValueEventListener() {
+        firebaseDatabase.child("users").child(currentUser.getDisplayName()).child("places").orderByChild("title").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if(dataSnapshot.exists()){
