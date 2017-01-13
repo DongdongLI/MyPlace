@@ -105,7 +105,7 @@ public class PlaceSearchFragment extends DialogFragment {
         searchEditText = (EditText) view.findViewById(R.id.search_txt);
         searchBtn = (Button)view.findViewById(R.id.search_btn);
         searchResultListView = (ListView)view.findViewById(R.id.search_result_list);
-        adapter = new AddressAdapter(getActivity(), R.layout.row_item_layout, searchResultList);
+        adapter = new AddressAdapter(getActivity(), R.layout.row_item_layout_simple, searchResultList);
 
         searchResultListView.setAdapter(adapter);
         adapter.setNotifyOnChange(true);

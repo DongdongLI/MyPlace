@@ -6,7 +6,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewManager;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.don.myplace.R;
@@ -28,7 +30,7 @@ public class AddressAdapter extends ArrayAdapter<SavedPlace> {
         this.mContext=context;
         this.mData=objects;
         this.mResource=resource;
-        Log.d("in adapter", mData.toString());
+        //Log.d("in adapter", mData.toString());
     }
 
     @Override
@@ -41,8 +43,13 @@ public class AddressAdapter extends ArrayAdapter<SavedPlace> {
         SavedPlace savedPlace=mData.get(position);
 
 
-        TextView addressDetail = (TextView) convertView.findViewById(R.id.placeTitle);
-        addressDetail.setText(savedPlace.getAddress());
+        ((TextView) convertView.findViewById(R.id.placeTitle)).setText(savedPlace.getTitle());
+        ((TextView) convertView.findViewById(R.id.placeAddress)).setText(savedPlace.getAddress());
+
+        // hide delete icon in search result
+        convertView.findViewById(R.id.delete_img).setVisibility(View.GONE);
+
+
         return convertView;
     }
 
