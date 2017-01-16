@@ -34,19 +34,19 @@
                 android:gravity="center"
                 android:hint="address" />
 
-            <EditText
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/detail_type_txt"
+                android:id="@+id/distance_txt"
                 android:layout_below="@+id/detail_addr_txt"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:hint="type" />
+                android:hint="Calculating..." />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/detail_type_txt"
+                android:layout_below="@+id/distance_txt"
                 android:orientation="horizontal">
 
                 <ImageView

@@ -250,6 +250,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 showEntryBasedOnCategory("restaurant");
                 break;
 
+            case R.id.menu_item3:
+                MainActivity.currLocation = null;
+                break;
 
             default:
                 break;

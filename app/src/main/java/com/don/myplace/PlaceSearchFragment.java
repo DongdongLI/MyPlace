@@ -169,7 +169,7 @@ public class PlaceSearchFragment extends DialogFragment {
                 while ((line = br.readLine()) != null) {
                     sb.append(line + "\n");
                 }
-                return PlaceParser.parse(sb.toString());
+                return PlaceParser.parsePlace(sb.toString());
             } catch (Exception e) {
                 Log.d(TAG, e.getMessage());
             }

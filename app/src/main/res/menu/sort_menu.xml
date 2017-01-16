@@ -5,5 +5,7 @@
         />
     <item android:id="@+id/menu_item2"
         android:title="Restaurant" />
+    <item android:id="@+id/menu_item3"
+        android:title="Clean current location" />
 
 </menu>

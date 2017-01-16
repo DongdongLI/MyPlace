@@ -3,10 +3,11 @@ package com.don.myplace;
 
 import android.app.Dialog;
 import android.app.DialogFragment;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.net.Uri;
@@ -21,9 +22,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 
 import com.don.myplace.model.SavedPlace;
+import com.don.myplace.parser.PlaceParser;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -33,8 +36,14 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by dli on 12/7/2016.
@@ -48,7 +57,7 @@ public class PlaceDetailFragment extends DialogFragment{
 
     EditText titleTxt;
     EditText addressTxt;
-    EditText typeTxt;
+    TextView distanceTxt;
     EditText numberTxt;
     ImageView callBtnImg;
 
@@ -56,6 +65,8 @@ public class PlaceDetailFragment extends DialogFragment{
     GoogleMap googleMap;
 
     private static View view;
+
+    static String APIKEY = null;
 
     private ManipulateDataInFragment listener;
 
@@ -76,6 +87,15 @@ public class PlaceDetailFragment extends DialogFragment{
         super.onAttach(context);
         if(context instanceof ManipulateDataInFragment)
             listener = (ManipulateDataInFragment) context;
+
+        if(APIKEY == null){
+            try {
+                ApplicationInfo ai = ((Context) listener).getPackageManager().getApplicationInfo(((Context) listener).getPackageName(), PackageManager.GET_META_DATA);
+                APIKEY = ai.metaData.getString("com.google.android.geo.API_KEY");
+            }catch (PackageManager.NameNotFoundException e){
+
+            }
+        }
     }
 
     @Override
@@ -104,7 +124,7 @@ public class PlaceDetailFragment extends DialogFragment{
         }
         titleTxt = (EditText)view.findViewById(R.id.detail_title_txt);
         addressTxt = (EditText)view.findViewById(R.id.detail_addr_txt);
-        typeTxt = (EditText)view.findViewById(R.id.detail_type_txt);
+        distanceTxt = (TextView)view.findViewById(R.id.distance_txt);
         numberTxt = (EditText)view.findViewById(R.id.detail_num_txt);
         callBtnImg = (ImageView)view.findViewById(R.id.call_btn);
 
@@ -119,12 +139,14 @@ public class PlaceDetailFragment extends DialogFragment{
                 }
         );
 
+
         builder.setView(view);
 
         // populate the editTexts
         titleTxt.setText(place.getTitle());
         addressTxt.setText(place.getAddress());
-        typeTxt.setText(place.getType());
+        //TODO: create a asyncronized function to calculate the distance and time of driving there
+        new DistanceMatrixTask().execute(place.getAddress());
         numberTxt.setText(place.getTelephone());
         callBtnImg.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -139,7 +161,6 @@ public class PlaceDetailFragment extends DialogFragment{
             public void onClick(DialogInterface dialog, int which) {
                 place.setAddress(addressTxt.getText().toString());
                 place.setTitle(titleTxt.getText().toString());
-                place.setType(typeTxt.getText().toString());
                 place.setTelephone(numberTxt.getText().toString());
                 listener.saveData(place);
             }
@@ -156,7 +177,6 @@ public class PlaceDetailFragment extends DialogFragment{
     }
 
     private void addMarkerWhenReady(final List<Address> addresses) {
-        Log.d(TAG, "i am in addMarkerWhenReady");
         mapFragment.getMapAsync(
                 new OnMapReadyCallback() {
                     @Override
@@ -223,6 +243,53 @@ public class PlaceDetailFragment extends DialogFragment{
                 addMarkerWhenReady(result);
             }
         }
+    }
 
+    class DistanceMatrixTask extends AsyncTask<String, Void, Map<String, String>>
+    {
+        BufferedReader br;
+
+        @Override
+        protected Map doInBackground(String... params) {
+            Log.d(TAG, "in distance background");
+            try {
+                while (MainActivity.currLocation == null) {
+                    Thread.sleep(500);
+                    //Log.d(TAG, "still waiting for location");
+                }
+            }catch (InterruptedException e){
+                Log.d(TAG, e.getMessage());
+            }
+
+            try {
+                String getPlaceIdUrl = "https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial"
+                        + "&origins="+ MainActivity.currLocation.getLatitude() + "," + MainActivity.currLocation.getLongitude()
+                        + "&destinations="+URLEncoder.encode(params[0], "UTF-8")
+                        + "&key=" + APIKEY;
+                URL url = new URL(getPlaceIdUrl);
+                Log.d(TAG, "url is: "+getPlaceIdUrl);
+                HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                con.setRequestMethod("GET");//POST
+
+                br = new BufferedReader(new InputStreamReader(con.getInputStream()));
+
+                StringBuilder sb = new StringBuilder();
+                String line = "";
+                while ((line = br.readLine()) != null) {
+                    sb.append(line + "\n");
+                }
+                return PlaceParser.parseDistanceAndTime(sb.toString());
+            } catch (Exception e) {
+                Log.d(TAG, e.getMessage());
+            }
+            return null;
+
+        }
+
+        @Override
+        protected void onPostExecute(Map<String, String> res) {
+            super.onPostExecute(res);
+            distanceTxt.setText("Distance: "+res.get("distance")+"  "+"Time: "+res.get("duration"));
+        }
     }
 }
