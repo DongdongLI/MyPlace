@@ -15,14 +15,20 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.PopupMenu;
 import android.util.Log;
 import android.view.InflateException;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 import com.don.myplace.model.SavedPlace;
@@ -60,6 +66,8 @@ public class PlaceDetailFragment extends DialogFragment{
     TextView distanceTxt;
     EditText numberTxt;
     ImageView callBtnImg;
+    ImageView driveBtnImg;
+    Button typeDropDown;
 
     MapFragment mapFragment;
     GoogleMap googleMap;
@@ -127,6 +135,8 @@ public class PlaceDetailFragment extends DialogFragment{
         distanceTxt = (TextView)view.findViewById(R.id.distance_txt);
         numberTxt = (EditText)view.findViewById(R.id.detail_num_txt);
         callBtnImg = (ImageView)view.findViewById(R.id.call_btn);
+        driveBtnImg = (ImageView)view.findViewById(R.id.drive_btn);
+        typeDropDown = (Button)view.findViewById(R.id.typeDropDownBtn);
 
         mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(
@@ -155,6 +165,37 @@ public class PlaceDetailFragment extends DialogFragment{
                 startActivity(callIntent);
             }
         });
+        driveBtnImg.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("waze://?q="+place.getAddress()+"&navigate=yes")));
+            }
+        });
+
+        typeDropDown.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                PopupMenu popup = new PopupMenu(getActivity(), typeDropDown);
+                //Inflating the Popup using xml file
+                popup.getMenuInflater()
+                        .inflate(R.menu.type_drop_down, popup.getMenu());
+
+                //registering popup with OnMenuItemClickListener
+                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    public boolean onMenuItemClick(MenuItem item) {
+                        Toast.makeText(
+                                getActivity(),
+                                "You Clicked : " + item.getTitle(),
+                                Toast.LENGTH_SHORT
+                        ).show();
+                        return true;
+                    }
+                });
+
+                popup.show(); //showing popup menu
+            }
+        });
+
 
         builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
             @Override

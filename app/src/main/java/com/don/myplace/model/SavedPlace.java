@@ -14,6 +14,8 @@ public class SavedPlace implements Serializable{
     private String address;
     private String telephone;
 
+    private CustomType customType;
+
     public String getTitle() {
         return title;
     }
@@ -52,6 +54,14 @@ public class SavedPlace implements Serializable{
 
     public void setPlaceId(String placeId) {
         this.placeId = placeId;
+    }
+
+    public CustomType getCustomType() {
+        return customType;
+    }
+
+    public void setCustomType(CustomType customType) {
+        this.customType = customType;
     }
 
     public SavedPlace(){}

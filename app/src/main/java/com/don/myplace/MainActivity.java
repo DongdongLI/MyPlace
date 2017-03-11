@@ -251,7 +251,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                 break;
 
             case R.id.menu_item3:
-                MainActivity.currLocation = null;
+                showEntryBasedOnCategory("people's place");
                 break;
 
             default:
